@@ -1,0 +1,120 @@
+function [image_matrix, block_matrix] = trial_shuffle_obsolete
+%trial_shuffle.m
+% shuffle blocks into runs and shuffle images into blocks!
+% each run will have five single img blocks and two double img blocks. 
+% For one run a task cannot repeat in a row. Each image is only presented 
+% once in each task. It is okay if they get the same image in a row in 
+% different tasks(last image in one block and first image in next block). 
+% Also okay if tasks repeats in different runs (task at the end of one run 
+% and beginning of the next). 
+% 1. For each run distribute 2 wm blocks that are not back to back
+% 2. Permute the rest of the blocks to fill in the rest of the runs. 
+% 3. For each task shuffle the order of the images. 
+% 4. Assertion checks that this code worked properly given constraints ^
+
+% Outputs
+% <run_matrix>      35 x 2 matrix. First column indicates run #. Second 
+%                   column indicates task number(1-6). Each row is a block.
+%
+% <image_matrix>    180 x 3 matrix. First column is run #, second column is
+%                   task number(1-6), and 3rd number is image number(1-30). 
+%                   Each row is a trial. 
+%
+% Notes:
+% What do the numbers mean? 
+%   -run numbers are 1-5, ran sequentially 
+%   -task numbers:
+%      1 = contrast
+%      2 = indoor/outdoor
+%      3 = what
+%      4 = where
+%      5 = how
+%      6 = wm
+%   -unique image numbers are 1-30, image filenames are labeled with 1-30
+
+%% set up variables 
+p = getparams;
+
+block_matrix = zeros(p.nruns, 3);
+block_matrix(:, 1) = 1:p.nruns; % column run = run #s (1-5)
+block_matrix = repelem(block_matrix, p.nblocks_run, 1); % 1 row for each block! 
+
+%% setting blocks 
+
+% working memory task
+for aa = 1:p.nruns % for each run
+    adjacent = true; 
+    while adjacent == true 
+        temp_possibleblocks = find(block_matrix(:, 1) == aa);
+        temp_wmblocks = datasample(temp_possibleblocks, p.d_nblock_run, 'Replace', false); % randomly pick 2 blocks in each run
+        
+        % check for no repeats:
+        if temp_wmblocks(1) == temp_wmblocks(2)+1 || temp_wmblocks(2) == temp_wmblocks(1)+1 % are indicies right next to each other?
+        else
+            adjacent = false;
+        end
+    end
+    block_matrix(temp_wmblocks, 2) = p.d_ID; % assign these blocks as working memory, 6!
+end
+
+% rest of the tasks 
+adjacent = true;
+while adjacent == true
+    blocksshuffled = shuffle(repmat([p.s_ID], 1, p.s_nblock_run)); % 5 tasks labeled 1-5 repeat 5 times
+    free_blocks = find(block_matrix(:, 2) ~= p.d_ID); % find the blocks that are not wm
+    block_matrix(free_blocks, 2) = blocksshuffled; % assign tasks to these blocks
+    
+    % check for no repeats:
+    adjacent = false;
+    for bb = 1:p.nruns % for each run 
+        temp = block_matrix(find(block_matrix(:, 1) == bb), 2);
+        if isempty(find(diff(temp) == 0)) % does a number repeat in this run?
+        else
+            adjacent = true; % continue loop if any run has a repeat
+        end
+    end
+end
+
+%% setting images
+
+% first, expand matrix to have one row per img instead of one row per block
+multfactor = zeros(length(block_matrix(:, 1)), 1); % variable w scale factor for each block
+
+for cc = 1:length(block_matrix) % for each row/block
+    if block_matrix(cc, 2) == p.d_ID
+        multfactor(cc, 1) = p.d_nimg_block; % wm sf = 3 (3 img per block)
+    else
+        multfactor(cc, 1) = p.s_nimg_block; % others sf = 6 (6 img per block)
+    end
+end
+
+image_matrix = repelem(block_matrix, multfactor, 1); % one row per img here
+block_matrix = block_matrix(:, 1:2); % to also save in format of one row per block
+
+% now, add the images
+for dd = 1:p.ntasks % for each task
+    temp_task = find(image_matrix(:, 2) == dd); 
+    image_matrix(temp_task, 3) = shuffle(1:p.nimg); % shuffle img # and add
+end 
+
+%% check outputs
+
+% there are 35 blocks and 180 images
+assert(length(block_matrix) == 35, 'too many blocks')
+assert(length(image_matrix) == 180, 'too many trials')
+
+% there are 30 unique imgs for each block type
+for ee = 1:p.ntasks
+    temp_check = find(image_matrix(:, 2) == ee);
+    assert(length(temp_check) == 30, 'more than 30 trials of a task');
+    assert(isempty(find(diff(image_matrix(temp_check, 3)) == 0)), 'image presented more than once in a task');
+end 
+
+% there are 2 wm blocks in each run and tasks dont happen in a row in a single run
+for ff = 1:p.nruns
+    temp_check = find(block_matrix(:, 1) == ff);
+    assert(length(temp_check) == p.nblocks_run, 'run does not have correct amount of blocks')
+    assert(length(find(block_matrix(temp_check, 2) == p.d_ID)) == p.d_nblock_run, 'incorrect number of wm blocks')
+    assert(isempty(find(diff(block_matrix(temp_check, 2)) == 0)), 'tasks repeat in a run')
+end 
+

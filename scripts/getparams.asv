@@ -1,0 +1,19 @@
+function [p] = getparams()
+%function [p] = getparams()
+% list of constants for freeviewing experiment
+
+%% experimental structure
+p.nimg         = 30;  % number of unique images
+p.ntasks       = 6;   % number of tasks 
+p.nruns        = 5;   % number of runs 
+p.nblocks_run  = 7;   % number of blocks per run
+
+% 1 epoch numbers
+p.s_nimg_block = 6;   % number of images per 1 epoch block 
+p.s_nblock_run = 5;   % number of 1 epoch blocks per run
+p.s_ID         = 1:5; % 1 epoch task IDs are 1-5
+
+% 2 epoch numbers (
+p.d_nimg_block = 3;   % number of images per 2 epoch block
+p.d_nblock_run = 2;   % number of 2 epoch blocks per run 
+p.d_ID         = 6;   % wm task ID is #6 

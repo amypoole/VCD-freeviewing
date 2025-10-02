@@ -5,15 +5,14 @@ function [p] = getparams()
 %% experimental structure
 p.nimg         = 30;  % number of unique images
 p.ntasks       = 6;   % number of tasks 
-p.nruns        = 5;   % number of runs 
-p.nblocks_run  = 7;   % number of blocks per run
+p.nruns        = 7;   % number of runs 
 
 % single image presentation numbers (s = single image)
-p.s_nimg_block = 6;   % number of images per 1 epoch block 
-p.s_nblock_run = 5;   % number of 1 epoch blocks per run
-p.s_ID         = 1:5; % 1 epoch task IDs are 1-5
+p.s_nimg_block = 30; % number of images per block for single image presentation blocks
+p.s_nruns_ses = 1;   % number of runs per session for each single image presentaiton task
+p.s_ID         = 1:5; % single img presentation task IDs are 1-5
 
 % double image presentaiton numbers (d = double image)
-p.d_nimg_block = 3;   % number of images per 2 epoch block
-p.d_nblock_run = 2;   % number of 2 epoch blocks per run 
+p.d_nimg_block = 15;  % number of images per block for double image presentaiton blocks 
+p.d_nruns_ses  = 2;   % number of runs per session for each double image presentation task (WM)
 p.d_ID         = 6;   % wm task ID is #6 
