@@ -14,6 +14,19 @@ function [images, frame_duration] = make_runorder(r_image_matrix, taskn)
 % add, the corresponding number of frames goes into frame_duration. This is
 % hard coded depending on the type of image from getparams 
 %
+% inputs:
+% <r_image_matrix> [30/15 x 1] of the unique ns image numbers in the order
+%                  of how they will be presented in the run
+% <taskn>          single number representing which task is going to be
+%                  performed in the run. 
+% outputs:
+% <images>         [700 x 700 x 3 x N] number of frames presented. The
+%                  actual stimulus files in order that they will be 
+%                  presented in ptviewmovie
+% <frame_duration> [ 1 X N] number of frames presented. A number of frames
+%                  the image will stay up on the screen per each image
+%                  presented 
+%
 % Note:
 %   the actual indexes into the stimuli are hard coded right now
 %
