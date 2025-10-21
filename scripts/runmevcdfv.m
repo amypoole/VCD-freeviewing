@@ -48,17 +48,25 @@ function [] = runmevcdfv(subjn, runn, wantnewruns, env, wanteyetracking, skipsyn
 %                   presented, 1-4. The ordering is the same ordering in
 %                   the scenes_wm field of the stimuli.mat.
 %
-%                   timeframes:
+%                   timeframes: records each time the next frame went up, 
+%                   should be somewhat equal to frame_duration
 %
-%                   timekeys:
+%                   timekeys: the buttons pressed and what time they were
+%                   pressed
 %
-%                   digitrecord:
+%                   digitrecord: ?
 %
-%                   trialoffsets:
+%                   trialoffsets: ?
+%
+%                   images: the images that were presented, Do we need to save this????
+%
+%                   image_order: the ordering of the images, indexing the variable images
+%
+%                   frame_duration: how long ptb was told to keep each frame up
 %
 %                   
 % ex: runmevcdfv(99, 1, true, 'PP', true, 1)
-%     runmevcdfv(99, 2, false, 'PP', true, 1)
+%     runmevcdfv(99, 2, false, 'PP')
 
 %% deal with inputs/pathing/variables
 
