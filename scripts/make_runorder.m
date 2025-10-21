@@ -88,8 +88,8 @@ I_inst     = 9;
 I_delay    = 10;
 
 % load in all images 
-scenes      = load('scenes_PPROOM_freeviewing.mat');
-fix         = load('fix_PPROOM_freeviewing.mat');
+scenes      = load([stimuli_dir, '/', 'scenes_PPROOM_freeviewing.mat']);
+fix         = load([stimuli_dir, '/', 'fix_PPROOM_freeviewing.mat']);
 inst        = dir([stimuli_dir '/instructions/*.png']);
 
 %% pretrial stuff %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

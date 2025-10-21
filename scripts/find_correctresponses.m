@@ -1,5 +1,5 @@
-function [run_info] = find_correctresponses(r_image_matrix, taskn)
-% function [run_info] = find_correctresponses(r_image_matrix, taskn)
+function [run_info] = find_correctresponses(r_image_matrix, taskn, stimuli_dir)
+% function [run_info] = find_correctresponses(r_image_matrix, taskn, stimuli_dir)
 % makes new variable that adds correct responses to a variable for saving.
 % How do we find the correct button press? 
 %   -for PC, what, where, and how: indexes into the info table columns to 
@@ -19,7 +19,7 @@ function [run_info] = find_correctresponses(r_image_matrix, taskn)
 p = getparams();
 nimgs = length(r_image_matrix);             % should always be 30 unless wm
 correct_responses = zeros(nimgs, 1);        % initialize the looping variable
-a1 = load('scenes_PPROOM_freeviewing.mat'); % load stimuli (for table) 
+a1 = load([stimuli_dir, '/', 'scenes_PPROOM_freeviewing.mat']); % load stimuli (for table) 
 
 %% add in correct responses 
 % deal with contrast case first

@@ -80,7 +80,8 @@ switch env
         el_monitor_size          = [-260.0, 162.5, 260.0, -162.5];         % monitor size in millimeters (center to left, top, right, and bottom). Numbers come from [32.5 cm height, 52 cm width] --> [325 cm height, 520 cm width] * 0.5
         el_screen_distance       = [1003 1003];                            % distance in millimeters from eye to top and bottom edge of the monitor. Given the 99 cm viewing distance, this is calculated as:  sqrt(99^2+(32.5/2)^2)*10 and then rounded to nearest integer.
         point2point_distance_pix = round(ppdeg * 4);                       % C/V targets are 4 degrees away from center
-        cv_proportion_area       = 88;                                     % ???
+        cv_proportion_area       = ([2,2].*point2point_distance_pix)...    % C/V targets take up what porpotion of the screen? 
+                                                           ./ [1920,1200];                              
 end
 
 
@@ -133,11 +134,11 @@ else
 end
 
 % gather the info on this run ---------------------------------------------
-run_matrix = image_matrix(image_matrix(:, 1) == runn, :);  % pull out this run
-taskn = run_matrix(1, 2);                                  % pull out task number 
-r_image_matrix = run_matrix(:, 3);                         % pull out images
+run_matrix = image_matrix(image_matrix(:, 1) == runn, :);               % pull out this run
+taskn = run_matrix(1, 2);                                               % pull out task number 
+r_image_matrix = run_matrix(:, 3);                                      % pull out images
 
-[run_info] = find_correctresponses(r_image_matrix, taskn); % pull out correct answers 
+[run_info] = find_correctresponses(r_image_matrix, taskn, stimuli_dir); % pull out correct answers 
 
 
 % push into the images ----------------------------------------------------
