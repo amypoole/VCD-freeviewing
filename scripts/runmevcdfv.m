@@ -155,6 +155,7 @@ r_image_matrix = run_matrix(:, 3);                                      % pull o
 %% start running experiment 
 
 % start PT!
+Screen('Preference', 'SyncTestSettings', 0.002);
 oldclut = pton([], [], [], skipsynctest);
 
 % call eyelink if needed
