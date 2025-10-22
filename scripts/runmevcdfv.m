@@ -94,7 +94,7 @@ end
 
 
 stimuli_dir = [git_dir, '/stimuli'];
-run_filedir = [git_dir, sprintf('/data/sub%.02d/run%.02d', subjn, runn)];
+run_filedir = [git_dir, sprintf('/data/sub%.02d', subjn)];
 if ~exist(run_filedir, 'dir')
     mkdir(run_filedir)
 end
@@ -113,7 +113,8 @@ if ~exist('skipsynctest', 'var')
     skipsynctest = 0;
 end
 
-rng('shuffle');
+rand('seed', sum(100*clock)); % randomize number generation 
+randn('seed', sum(100*clock)); 
 
 % get a timestamp
 datestring = datetime;
