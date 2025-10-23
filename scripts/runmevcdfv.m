@@ -1,7 +1,7 @@
 function [] = runmevcdfv(subjn, runn, wantnewruns, env, wanteyetracking, skipsynctest)
 % run me script for my exp (1 run at a time)
 % inputs
-% <subjn>        subject number (ex: 1)
+% <subjn>           subject number (ex: 1)
 % <runn>            run number, 1-7
 % <wantnewruns>     T/F, if you want to create a new set of runs (like if
 %                   this was the first run for this participant). Set to
@@ -159,18 +159,22 @@ r_image_matrix = run_matrix(:, 3);                                      % pull o
 Screen('Preference', 'SyncTestSettings', 0.002);
 oldclut = pton([], [], [], skipsynctest);
 
-% call eyelink if needed
+% call eyelink if needed, set up message for experiment start/end
 if wanteyetracking
   eyetempfile = pteyelinkon(el_monitor_size,el_screen_distance,cv_proportion_area,point2point_distance_pix);
+  tfun = @() cat(2,fprintf('STIMULUS START/STOP.\n'),Eyelink('Message','SYNCTIME'));
+else
+  tfun = @() fprintf('STIMULUS START/STOP.\n');
 end
 
 fprintf('*** The next task will be %s ***\n', taskstring); % let the user prepare the participant 
 
 % run the experiment
-[timeframes,timekeys,digitrecord,trialoffsets] = ptviewmovie(images, image_order, [], frame_duration, [], [], zeros(5, 5), 128); 
+[timeframes,timekeys,digitrecord,trialoffsets] = ptviewmovie(images, image_order, [], frame_duration, [], [], zeros(5, 5), 128, [], [], [], [], [], [], [], tfun); 
+
 % save!!!!!!
 save(matfilename, 'run_info', 'timeframes', 'timekeys', 'digitrecord', 'trialoffsets', 'images', 'image_order', 'frame_duration');
-%saveexcept(filename,{'a1'});  % save immediately to prevent data loss
+
 fprintf('Experiment took %.5f seconds.\n',mean(diff(timeframes))*length(timeframes));
 
 %% put things away and save 
