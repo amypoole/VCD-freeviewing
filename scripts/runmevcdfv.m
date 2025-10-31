@@ -58,8 +58,6 @@ function [] = runmevcdfv(subjn, runn, wantnewruns, env, wanteyetracking, skipsyn
 %
 %                   trialoffsets: ?
 %
-%                   images: the images that were presented, Do we need to save this????
-%
 %                   image_order: the ordering of the images, indexing the variable images
 %
 %                   frame_duration: how long ptb was told to keep each frame up
@@ -175,7 +173,7 @@ fprintf('*** The next task will be %s ***\n', taskstring); % let the user prepar
 [timeframes,timekeys,digitrecord,trialoffsets] = ptviewmovie(images, image_order, [], frame_duration, [], [], zeros(5, 5), 128, [], [], [], [], [], [], [], tfun); 
 
 % save!!!!!!
-save(matfilename, 'run_info', 'timeframes', 'timekeys', 'digitrecord', 'trialoffsets', 'images', 'image_order', 'frame_duration');
+save(matfilename, 'run_info', 'timeframes', 'timekeys', 'digitrecord', 'trialoffsets', 'image_order', 'frame_duration');
 
 fprintf('Experiment took %.5f seconds.\n',mean(diff(timeframes))*length(timeframes));
 
