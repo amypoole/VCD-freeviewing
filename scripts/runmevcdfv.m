@@ -65,7 +65,7 @@ function [] = runmevcdfv(subjn, runn, wantnewruns, env, wanteyetracking, skipsyn
 %                   frame_duration: how long ptb was told to keep each frame up
 %
 %                   
-% ex: runmevcdfv(99, 1, true, 'PP', true, 1)
+% ex: runmevcdfv(99, 2, false, 'AMY', false, 1)
 %     runmevcdfv(99, 2, false, 'PP')
 
 %% deal with inputs/pathing/variables
@@ -76,20 +76,20 @@ switch env
         ptb_dir     = '/Users/lana/Documents/MATLAB/Psychtoolbox-3-3.0.17.3'; addpath(genpath(ptb_dir));
         knk_dir     = '/Users/lana/Documents/MATLAB/knkutils'; addpath(genpath(knk_dir));
         git_dir     = '/Users/lana/Desktop/VCD-freeviewing'; addpath(genpath(git_dir));
+        ptonparams  = []; 
     case 'PP'
         ptb_dir     = '/Applications/Psychtoolbox'; addpath(genpath(ptb_dir));
         knk_dir     = '/Users/psphuser/Desktop/cvnlab/VCD-freeviewing/knkutils'; addpath(genpath(knk_dir));
         git_dir     = '/Users/psphuser/Desktop/cvnlab/VCD-freeviewing'; addpath(genpath(git_dir));
         %screen
-        height_deg               =  atan( (32.5 / 2) / 99.0) / pi*180*2;   % 18.64 deg 
-        width                    = atan( (52.0 / 2) / 99.0) / pi*180*2';   % 29.43 deg 
         ppdeg                    = 63.902348145300280;                     % using screen width
+        ptonparams               = [1920 1200 0 24];                       % tell ptb the screen information 
         % eyelink
         el_monitor_size          = [-260.0, 162.5, 260.0, -162.5];         % monitor size in millimeters (center to left, top, right, and bottom). Numbers come from [32.5 cm height, 52 cm width] --> [325 cm height, 520 cm width] * 0.5
         el_screen_distance       = [1003 1003];                            % distance in millimeters from eye to top and bottom edge of the monitor. Given the 99 cm viewing distance, this is calculated as:  sqrt(99^2+(32.5/2)^2)*10 and then rounded to nearest integer.
         point2point_distance_pix = round(ppdeg * 4);                       % C/V targets are 4 degrees away from center
         cv_proportion_area       = ([2,2].*point2point_distance_pix)...    % C/V targets take up what porpotion of the screen? 
-                                                           ./ [1920,1200];                              
+                                                           ./ [1920,1200];     
 end
 
 
@@ -159,7 +159,7 @@ fprintf('*** The next task will be %s ***\n', taskstring); % let the user prepar
 
 % start PT!
 Screen('Preference', 'SyncTestSettings', 0.002);
-oldclut = pton([], [], [], skipsynctest);
+oldclut = pton(ptonparams, [], [], skipsynctest);
 
 % call eyelink if needed, set up message for experiment start/end
 if wanteyetracking
