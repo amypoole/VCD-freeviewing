@@ -26,7 +26,7 @@ runn = regexp(filename, 'eye_sub\d+_run(\d+)_*', 'tokens');% find run number
 runn = str2double((runn{1}{1}));                           % convert to double
 
 % extract .asc filename 
-ascfilename = regexp(filename, '(.*).edf$', 'tokens') % take out .edf ending 
+ascfilename = regexp(filename, '(.*).edf$', 'tokens'); % take out .edf ending 
 ascfilename = [(ascfilename{1}{1}) '.asc']; % convert to string and add .asc ending 
 
 % collect directories 
@@ -191,3 +191,6 @@ title('gaze')
 if savefigures == 1
     saveas(gcf, [figure_dir '/' sprintf('run%.02d_eyetracings.png', runn)])
 end
+
+save([path_edf '/' sprintf('sub%.02d_run%.02d_preprocessed_eyedata.mat', subn, runn)],...
+    'exp_noblinks_gaze', 'exp_noblinks_pupil', 'time_secs');
