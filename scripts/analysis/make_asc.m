@@ -1,4 +1,4 @@
-function [] = make_asc(edfDir, outputDir, elfileNameBase)
+function [] = make_asc(edfDir, elfileNameBase, outputDir)
 % [] = make_asc(edfDir, outputDir)
 % Takes edf files and uses edf2asc to convert into asc files
 % Flags are replace missing values with NaN and give velocity data. 
@@ -11,12 +11,13 @@ function [] = make_asc(edfDir, outputDir, elfileNameBase)
 % Inputs:
 % <edfDir> string, a directory of where edf files are located.
 %
-% <outputDir> (optional) string, if you want to save your asc file(s) in a
-% different location than the edf files, specify the directory here
-%
 % <elfileNameBase> (optional) string, contains the name of the file 
 % you want to convert. If unspecified, the function will convert all .edf 
 % files in the edfDir (aka default is '*.edf')
+%
+% <outputDir> (optional) string, if you want to save your asc file(s) in a
+% different location than the edf files, specify the directory here
+%
 
 %% Get variables and directories ------------------------------------------
 
@@ -55,8 +56,8 @@ for ii = 1:length(d_edf)
     system(sprintf('%s %s %s', elProgram, flags, elfileName));
 end
 
-d_asc = dir([edfDir '/' '*.asc']);
-fprintf('---%d asc file(s) created---\n', length(d_asc))
+%d_asc = dir([edfDir '/' '*.asc']);
+%fprintf('---%d asc file(s) created---\n', length(d_asc))
 
 % Move asc files if we need to
 if exist('outputDir', 'var')

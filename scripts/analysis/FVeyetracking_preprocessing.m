@@ -19,30 +19,42 @@ if ~exist('savefigures', 'var')
     savefigures = 1;
 end
 
-% extract sub name from the filename 
-subn = regexp(filename, 'eye_sub(\d+)_run*', 'tokens'); % find subject number
-subn = str2double((subn{1}{1}));                        % convert to double 
+% extract sub name/runn from the filename 
+subn = regexp(filename, 'eye_sub(\d+)_run*', 'tokens');    % find subject number
+subn = str2double((subn{1}{1}));                           % convert to double 
+runn = regexp(filename, 'eye_sub\d+_run(\d+)_*', 'tokens');% find run number
+runn = str2double((runn{1}{1}));                           % convert to double
 
 % extract .asc filename 
 ascfilename = regexp(filename, '(.*).edf$', 'tokens') % take out .edf ending 
 ascfilename = [(ascfilename{1}{1}) '.asc']; % convert to string and add .asc ending 
 
 % collect directories 
+addpath(genpath('/Users/lana/Desktop/VCD-freeviewing'));
 path_main  = '/Users/lana/Desktop/VCD-freeviewing/data'; % note directory will change for surly
 path_edf   = [path_main sprintf('/sub%.02d', subn)];
 figure_dir = [path_main sprintf('/sub%.02d/sub%.02d_figs', subn, subn)]; % where are we saving the eye figures
+if savefigures == 1
+    if ~exist('figure_dir', 'dir')
+        mkdir(figure_dir)
+    end
+end
 
 %assert edf file exists 
-assert(~isempty(dir([path_edf filename])), 'no edf file found')
+assert(~isempty(dir([path_edf '/' filename])), 'no edf file found')
 
 % preprocessing variables 
-pxlperdeg   = 64.3673991642835;      % for PP room (CHECK)
-padblink    = 100;                   % ms that will be cut before and after blinks 
+pxlperdeg    = 63.902348145300280;  % for PP room using screen width
+screenpxls   = [1920 1200];         % pixels of screen [width height]
+padblink     = 100;                 % ms that will be cut before and after blinks 
+hbdelta      = 75;                  % number of milliseconds before and after a time point to check for half-blink
+absdeflect   = 3;                   % look for a deflection greater than this number of degrees
+restorelevel = 1;                   % should be within this number of degrees for restoration
 
 %% create asc files
 
 % check if asc file was already created 
-if isempty(dir([path_edf ascfilename]))
+if isempty(dir([path_edf '/' ascfilename]))
     % create asc file
     make_asc(path_edf, filename);            
 end
@@ -58,12 +70,14 @@ timepoints = data.dat(:,1);                     % arbitraty long time (ms)
 raw_gaze = [data.dat(:,2), data.dat(:,3)];      % X and Y gaze
 raw_pupil = data.dat(:,4);                      % pupil size
 
-%% convert to visual degrees 
+%% convert to visual degrees / center
+% center at 0,0
+raw_gaze(:, 1) = raw_gaze(:, 1) - (screenpxls(:, 1)/2);
+raw_gaze(:, 2) = raw_gaze(:, 2) - (screenpxls(:, 2)/2);
 
 raw_gaze = raw_gaze ./ pxlperdeg;
 raw_pupil = raw_pupil ./ pxlperdeg; 
 
-% maybe have to center at 0,0?
 %% remove blinks 
 
 b_ix          = []; % keep note of all the blink timepoints 
@@ -87,17 +101,21 @@ for p=1:length(data.eblink.stime) % for each detected blink
 
 end
 
+detb = size(b_ix, 2);
+
 %and the ones eyelink did not detect via KK FIX TO WORK
-marks = [];
-for tt0=1:size(results.eyedata,2)
-  if (abs(diff(results.eyedata(2,[max(1,tt0-hbdelta) tt0]))) > absdeflect && ...
-      abs(diff(results.eyedata(2,[max(1,tt0-hbdelta) min(size(results.eyedata,2),tt0+hbdelta)]))) <= restorelevel) || ...
-     (abs(diff(results.eyedata(3,[max(1,tt0-hbdelta) tt0]))) > absdeflect && ...
-      abs(diff(results.eyedata(3,[max(1,tt0-hbdelta) min(size(results.eyedata,2),tt0+hbdelta)]))) <= restorelevel)
-    marks = [marks min(size(results.eyedata,2),max(1,tt0-blinkpad(1):tt0+blinkpad(2)))];
+for aa=1:size(raw_gaze(:, 1), 1)
+  if (abs(diff(raw_gaze([max(1,aa-hbdelta) aa], 1))) > absdeflect && ...
+      abs(diff(raw_gaze([max(1,aa-hbdelta) min(size(raw_gaze(:, 1), 1),aa+hbdelta)], 1))) <= restorelevel) || ...
+     (abs(diff(raw_gaze([max(1,aa-hbdelta) aa], 2))) > absdeflect && ...
+      abs(diff(raw_gaze([max(1,aa-hbdelta) min(size(raw_gaze(:, 1), 1),aa+hbdelta)], 2))) <= restorelevel)
+    b_ix = [b_ix min(size(results.eyedata,2),max(1,aa-blinkpad(1):aa+blinkpad(2)))];
   end
 end
-results.eyedata(2:4,unique(marks)) = NaN;
+
+undetb = size(b_ix, 2) - detb;
+
+fprintf('---%d ms of detected blinks, %d of undetected half blinks---\n', detb, undetb)
 
 % lets not overwrite the raw data, make a new variable 
 noblinks_gaze        = raw_gaze; 
@@ -127,7 +145,7 @@ end
 % trim data
 exp_timepoints       = timepoints(start_idx:end_idx); 
 exp_noblinks_gaze    = noblinks_gaze(start_idx:end_idx, :);
-exp_no_blinks_pupil  = noblinks_pupil(start_idx:end_idx);
+exp_noblinks_pupil  = noblinks_pupil(start_idx:end_idx);
 
 %% plot
 
@@ -140,25 +158,36 @@ subplot(3, 1, 1) % raw gaze data (but trimmed to exp)
 plot(time_secs, raw_gaze(start_idx:end_idx, 1)); hold on
 plot(time_secs, raw_gaze(start_idx:end_idx, 2))
 legend('X', 'Y')
+xlabel('time (seconds)')
+ylabel('degrees')
 title('raw gaze')
 
 subplot(3,1,2)   % gaze data with blinks removed
 plot(time_secs, exp_noblinks_gaze(:, 1)); hold on
 plot(time_secs, exp_noblinks_gaze(:, 2))
 legend('X', 'Y')
+xlabel('time (seconds)')
+ylabel('degrees')
 title('gaze with blinks removed')
 
 subplot(3, 1, 3) % pupil data with blinks removed 
-plot(time_secs, exp_no_blinks_pupil); hold on
+plot(time_secs, exp_noblinks_pupil); hold on
+xlabel('time (seconds)')
 title('pupil size')
 
 if savefigures == 1 % FIX EXTRACT RUN NUMBER 
-    saveas(gcf, [figure_dir '/' sprintf('run%.02d_eyedata.png', bb)])
+    saveas(gcf, [figure_dir '/' sprintf('run%.02d_eyedata.png', runn)])
 end
 
 % X by Y FIX MAKE SURE THIS WORKS 
 figure; 
 plot(exp_noblinks_gaze(:, 1), exp_noblinks_gaze(:, 2))
+xlim([(-screenpxls(:, 1)/2 / pxlperdeg) (screenpxls(:, 1)/2 / pxlperdeg) ])
+ylim([(-screenpxls(:, 2)/2 / pxlperdeg) (screenpxls(:, 2)/2 / pxlperdeg) ])
+xlabel('degrees')
+ylabel('degrees')
+title('gaze')
 
-if savefigures = 1
-    saveas(gcf, [figure_dir '/' sprintf(
+if savefigures == 1
+    saveas(gcf, [figure_dir '/' sprintf('run%.02d_eyetracings.png', runn)])
+end
