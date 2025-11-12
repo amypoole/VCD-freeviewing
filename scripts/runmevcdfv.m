@@ -88,6 +88,13 @@ switch env
         point2point_distance_pix = round(ppdeg * 4);                       % C/V targets are 4 degrees away from center
         cv_proportion_area       = ([2,2].*point2point_distance_pix)...    % C/V targets take up what porpotion of the screen? 
                                                            ./ [1920,1200];     
+        % bits 
+        smatch = matchfiles('/dev/tty.usbmodem*');
+        assert(length(smatch)==1);
+        s1 = serial(smatch{1}); fopen(s1);
+        fprintf(s1, ['$BitsPlusPlus' 13]);
+        fprintf(s1, ['$enableGammaCorrection=[greyLums.txt]' 13]);
+        fclose(s1); delete(s1); clear smatch s1;
 end
 
 
@@ -156,7 +163,7 @@ r_image_matrix = run_matrix(:, 3);                                      % pull o
 fprintf('*** The next task will be %s ***\n', taskstring); % let the user prepare the participant 
 
 % start PT!
-Screen('Preference', 'SyncTestSettings', 0.002);
+% Screen('Preference', 'SyncTestSettings', 0.002); 
 oldclut = pton(ptonparams, [], [], skipsynctest);
 
 % call eyelink if needed, set up message for experiment start/end
